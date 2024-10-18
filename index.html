@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title> ………我们的留言板……… </title> <!--<title> SQLite 留言板 </title>原来的我注释了-->
+    <script>
+        function create_database() {
+            var db = openDatabase('mydb', '1.0', 'Test DB', 2 * 1024 * 1024);
+            var msg;
+ 
+            db.transaction(function (tx) {
+                tx.executeSql('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, title TEXT, body TEXT, time DATE)');
+            });
+        }
+ 
+        function add_message() {
+            var title = document.getElementById('title').value;
+            var body = document.getElementById('body').value;
+            var db = openDatabase('mydb', '1.0', 'Test DB', 2 * 1024 * 1024);
+            db.transaction(function (tx) {
+                tx.executeSql('INSERT INTO messages (title, body, time) VALUES (?, ?, ?)', [title, body, new Date()], null, null);
+            });
+            document.getElementById('title').value = '';
+            document.getElementById('body').value = '';
+            alert('Message added!');
+        }
+ 
+        function retrieve_messages() {
+            var db = openDatabase('mydb', '1.0', 'Test DB', 2 * 1024 * 1024);
+            var msg;
+ 
+            db.transaction(function (tx) {
+                tx.executeSql('SELECT * FROM messages ORDER BY time DESC', [], function (tx, results) {
+                    var len = results.rows.length, i;
+                    msg = "<p><b>Found rows: " + len + "</b></p>";
+                    document.getElementById('messages').innerHTML = '';
+                    for (i = 0; i < len; i++){
+                        msg += "<p><b>" + results.rows.item(i).title + "</b></p>";
+                        msg += "<p>" + results.rows.item(i).body + "</p>";
+                        msg += "<p><i>" + results.rows.item(i).time + "</i></p>";
+                    }
+                    document.getElementById('messages').innerHTML = msg;
+                }, null);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>………我们的留言板………</h1> <!--<h1>SQLite 留言板</h1>原来的我注释了-->
+    <h3>……要查看留言…请点击：查看留言 按钮……</h1> 
+    <input type="button" value="Create Database" onclick="create_database()" />
+    <h2>新留言</h2>
+    <p>标题: <input type="text" id="title" size="30" /></p>
+    <p>内容: <textarea id="body" cols="30" rows="5"></textarea></p>
+    <input type="button" value="   添加留言    " onclick="add_message()" />
+    <!--<h2>留言列表</h2>-->
+    <input type="button" value="    查看留言   " onclick="retrieve_messages()" />
+    <div id="messages"></div>
+    <!--<input type="button" value="查看留言" onclick="retrieve_messages()" />-->
+</body>
+</html>
